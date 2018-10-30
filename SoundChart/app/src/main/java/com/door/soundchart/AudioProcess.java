@@ -6,6 +6,8 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 
+import com.scichart.charting.model.dataSeries.XyDataSeries;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,8 +24,13 @@ public class AudioProcess {
     private int half_len = 512;
     private int batchNum = 50;
     private int sampleRate = 44100;
+    private XyDataSeries lineData;
 
-    Context mContext;
+
+    public AudioProcess(XyDataSeries lineData) {
+        this.lineData = lineData;
+    }
+
     private int shift = 30;
     public int frequence = 0;
 
@@ -114,24 +121,28 @@ public class AudioProcess {
         public DrawThread() {
 
         }
-            @SuppressWarnings("unchecked")
+        private int x = 0;
+        @SuppressWarnings("unchecked")
         public void run() {
-            while (isRecording) {
-                ArrayList<int[]>buf = new ArrayList<int[]>();
-                synchronized (outBuf) {
-                    if (outBuf.size() == 0) {
-                        continue;
-                    }
-                    buf = (ArrayList<int[]>)outBuf.clone();
-                    outBuf.clear();
-                }
-                // drawing with the processed data
-                for(int i = 0; i < buf.size(); i++){
-                    int[]tmpBuf = buf.get(i);
-                    Log.d("OUTPUT", Arrays.toString(tmpBuf));
-                    // TODO: SimpleDraw tmpBuf
-                }
-            }
+
+
+                lineData.append(x, Math.sin(x * 0.1));
+//                ArrayList<int[]>buf = new ArrayList<int[]>();
+//                synchronized (outBuf) {
+//                    if (outBuf.size() == 0) {
+//                        continue;
+//                    }
+//                    buf = (ArrayList<int[]>)outBuf.clone();
+//                    outBuf.clear();
+//                }
+//                // drawing with the processed data
+//                for(int i = 0; i < buf.size(); i++){
+//                    int[]tmpBuf = buf.get(i);
+//                    Log.d("OUTPUT", Arrays.toString(tmpBuf));
+//                    // TODO: SimpleDraw tmpBuf
+//                }
+                ++x;
+
         }
     }
 
