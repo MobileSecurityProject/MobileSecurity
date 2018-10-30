@@ -111,7 +111,7 @@ public class AudioProcess {
                             for (int powerInt :
                                     power) {
                                 synchronized (lineData){
-                                    lineData.append(x, (double)powerInt);
+                                    lineData.append(x,  Math.log(powerInt));
                                     ++x;
                                 }
                             }
