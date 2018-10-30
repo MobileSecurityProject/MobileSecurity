@@ -7,6 +7,8 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.scichart.charting.model.dataSeries.XyDataSeries;
+import com.scichart.charting.visuals.SciChartSurface;
+import com.scichart.core.framework.UpdateSuspender;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,9 +27,12 @@ public class AudioProcess {
     private int batchNum = 50;
     private int sampleRate = 44100;
     private XyDataSeries lineData;
+    private SciChartSurface surface;
 
-
-    public AudioProcess(XyDataSeries lineData) {
+    private int x = 0;
+    public AudioProcess(SciChartSurface surface, XyDataSeries lineData)
+    {
+        this.surface = surface;
         this.lineData = lineData;
     }
 
@@ -38,7 +43,7 @@ public class AudioProcess {
     public void start() {
         isRecording = true;
         new RecordThread().start();
-        new DrawThread().start();
+//        new DrawThread().start();
     }
 
     //停止程序
@@ -103,6 +108,13 @@ public class AudioProcess {
                         synchronized (outBuf) {
                             Log.d("POWER:", Arrays.toString(power));
                             outBuf.add(power);
+                            for (int powerInt :
+                                    power) {
+                                synchronized (lineData){
+                                    lineData.append(x, (double)powerInt);
+                                    ++x;
+                                }
+                            }
                         }
                     }
 
@@ -118,6 +130,7 @@ public class AudioProcess {
 
     // Drawing process
     class DrawThread extends Thread {
+
         public DrawThread() {
 
         }
@@ -126,7 +139,7 @@ public class AudioProcess {
         public void run() {
 
 
-                lineData.append(x, Math.sin(x * 0.1));
+//                lineData.append(x, Math.sin(x * 0.1));
 //                ArrayList<int[]>buf = new ArrayList<int[]>();
 //                synchronized (outBuf) {
 //                    if (outBuf.size() == 0) {
@@ -141,7 +154,21 @@ public class AudioProcess {
 //                    Log.d("OUTPUT", Arrays.toString(tmpBuf));
 //                    // TODO: SimpleDraw tmpBuf
 //                }
-                ++x;
+//                ++x;
+
+//            UpdateSuspender.using(surface, new Runnable() {
+//                @Override
+//                public void run() {
+////                    lineData.append(x, Math.sin(x * 0.1));
+//
+//                    // Zoom series to fit the
+////                    Log.d("Draw:", "DRAWWWWWW");
+////                    synchronized (lineData){
+////                        surface.zoomExtents();
+////                    }
+////                    ++x;
+//                }
+//            });
 
         }
     }

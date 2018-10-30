@@ -26,7 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
-
+    AudioProcess ap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
                 .withFifoCapacity(fifoCapacity)
                 .build();
 
+        ap = new AudioProcess(surface, lineData);
+        ap.start();
         TimerTask updateDataTask = new TimerTask() {
             private int x = 0;
 
@@ -107,11 +109,11 @@ public class MainActivity extends AppCompatActivity {
                 UpdateSuspender.using(surface, new Runnable() {
                     @Override
                     public void run() {
-                        lineData.append(x, Math.sin(x * 0.1));
+//                        lineData.append(x, Math.sin(x * 0.1));
 
                         // Zoom series to fit the viewport
                         surface.zoomExtents();
-                        ++x;
+//                        ++x;
                     }
                 });
             }
@@ -122,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         long delay = 0;
         long interval = 10;
         timer.schedule(updateDataTask, delay, interval);
+
 
         // Create and configure a line series
         final IRenderableSeries lineSeries = sciChartBuilder.newLineSeries()
