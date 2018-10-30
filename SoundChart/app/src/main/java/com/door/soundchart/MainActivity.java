@@ -1,5 +1,8 @@
 package com.door.soundchart;
 
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
@@ -19,7 +22,7 @@ import com.scichart.extensions.builders.SciChartBuilder;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
-
+    private AudioProcess audioProcess;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Create a couple of DataSeries for numeric (Int, Double) data
-        XyDataSeries lineData = CreateData(sciChartBuilder);
+        XyDataSeries lineData = UpdateData(sciChartBuilder);
 
 
         // Create and configure a line series
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         surface.zoomExtents();
     }
 
-    public XyDataSeries CreateData(SciChartBuilder sciChartBuilder) {
+    public XyDataSeries UpdateData(SciChartBuilder sciChartBuilder) {
         // Added in Tutorial #2
         // Create a couple of DataSeries for numeric (Int, Double) data
         XyDataSeries lineData = sciChartBuilder.newXyDataSeries(Integer.class, Double.class).build();
@@ -109,4 +112,17 @@ public class MainActivity extends AppCompatActivity {
 
         return lineData;
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        audioProcess.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        audioProcess.stop();
+    }
+
 }
