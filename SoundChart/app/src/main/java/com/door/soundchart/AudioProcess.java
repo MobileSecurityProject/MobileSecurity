@@ -43,7 +43,7 @@ public class AudioProcess {
         inBuf.clear();
     }
 
-    public void hasHighFreq(int[] buf) {
+    public void identifyHighFreq(int[] buf) {
         int max = 0;
         double average = 0;
         for (int i = highFreqIdx; i < halfLen; i++) {
@@ -145,7 +145,7 @@ public class AudioProcess {
                 for(int i = 0; i < buf.size(); i++){
                     int[]tmpBuf = buf.get(i);
                     Log.d("OUTPUT", Arrays.toString(tmpBuf));
-                    hasHighFreq(tmpBuf);
+                    identifyHighFreq(tmpBuf);
                     // TODO: SimpleDraw tmpBuf
                 }
             }
