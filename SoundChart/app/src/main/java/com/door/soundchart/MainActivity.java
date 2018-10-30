@@ -1,13 +1,12 @@
 package com.door.soundchart;
-
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.widget.LinearLayout;
 
+import com.scichart.charting.ClipMode;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
+import com.scichart.charting.modifiers.AxisDragModifierBase;
 import com.scichart.charting.modifiers.ModifierGroup;
 import com.scichart.charting.visuals.SciChartSurface;
 import com.scichart.charting.visuals.annotations.HorizontalAnchorPoint;
@@ -16,20 +15,26 @@ import com.scichart.charting.visuals.annotations.VerticalAnchorPoint;
 import com.scichart.charting.visuals.axes.IAxis;
 import com.scichart.charting.visuals.pointmarkers.EllipsePointMarker;
 import com.scichart.charting.visuals.renderableSeries.IRenderableSeries;
+import com.scichart.core.annotations.Orientation;
+import com.scichart.core.framework.UpdateSuspender;
+import com.scichart.core.model.DoubleValues;
 import com.scichart.drawing.utility.ColorUtil;
 import com.scichart.extensions.builders.SciChartBuilder;
 
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
-    private AudioProcess audioProcess = new AudioProcess();;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_btn);
+        setContentView(R.layout.activity_main);
 
+        // Added in Tutorial #1
         // Create a SciChartSurface
-        SciChartSurface surface = new SciChartSurface(this);
+        final SciChartSurface surface = new SciChartSurface(this);
 
         // Get a layout declared in "activity_main.xml" by id
         LinearLayout chartLayout = (LinearLayout) findViewById(R.id.chart_layout);
@@ -63,10 +68,14 @@ public class MainActivity extends AppCompatActivity {
                 .withFontStyle(20, ColorUtil.White)
                 .build();
 
-        // Create interactivity modifiers
+        // Added in Tutorial #3
+        // Add a bunch of interaction modifiers to a ModifierGroup
         ModifierGroup chartModifiers = sciChartBuilder.newModifierGroup()
-                .withPinchZoomModifier().withReceiveHandledEvents(true).build()
+                .withPinchZoomModifier().build()
                 .withZoomPanModifier().withReceiveHandledEvents(true).build()
+                .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
+                .withXAxisDragModifier().withReceiveHandledEvents(true).withDragMode(AxisDragModifierBase.AxisDragMode.Scale).withClipModex(ClipMode.None).build()
+                .withYAxisDragModifier().withReceiveHandledEvents(true).withDragMode(AxisDragModifierBase.AxisDragMode.Pan).build()
                 .build();
 
         // Add the Y axis to the YAxes collection of the surface
@@ -81,10 +90,38 @@ public class MainActivity extends AppCompatActivity {
         // Add the interactions to the ChartModifiers collection of the surface
         Collections.addAll(surface.getChartModifiers(), chartModifiers);
 
-
+        // Added in Tutorial #6 - FIFO (scrolling) series
         // Create a couple of DataSeries for numeric (Int, Double) data
-        XyDataSeries lineData = UpdateData(sciChartBuilder);
+        // Set FIFO capacity to 500 on DataSeries
+        final int fifoCapacity = 500;
 
+        final XyDataSeries lineData = sciChartBuilder.newXyDataSeries(Integer.class, Double.class)
+                .withFifoCapacity(fifoCapacity)
+                .build();
+
+        TimerTask updateDataTask = new TimerTask() {
+            private int x = 0;
+
+            @Override
+            public void run() {
+                UpdateSuspender.using(surface, new Runnable() {
+                    @Override
+                    public void run() {
+                        lineData.append(x, Math.sin(x * 0.1));
+
+                        // Zoom series to fit the viewport
+                        surface.zoomExtents();
+                        ++x;
+                    }
+                });
+            }
+        };
+
+        Timer timer = new Timer();
+
+        long delay = 0;
+        long interval = 10;
+        timer.schedule(updateDataTask, delay, interval);
 
         // Create and configure a line series
         final IRenderableSeries lineSeries = sciChartBuilder.newLineSeries()
@@ -94,37 +131,16 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Add a RenderableSeries onto the SciChartSurface
-//        surface.getRenderableSeries().add(scatterSeries);
         surface.getRenderableSeries().add(lineSeries);
         surface.zoomExtents();
 
-        audioProcess.start();
+
+        // Create and configure a CursorModifier
+        ModifierGroup cursorModifier = sciChartBuilder.newModifierGroup()
+                .withCursorModifier().withShowTooltip(true).build()
+                .build();
+
+        // Add the CursorModifier to the SciChartSurface
+        surface.getChartModifiers().add(cursorModifier);
     }
-
-    public XyDataSeries UpdateData(SciChartBuilder sciChartBuilder) {
-        // Added in Tutorial #2
-        // Create a couple of DataSeries for numeric (Int, Double) data
-        XyDataSeries lineData = sciChartBuilder.newXyDataSeries(Integer.class, Double.class).build();
-//        XyDataSeries scatterData = sciChartBuilder.newXyDataSeries(Integer.class, Double.class).build();
-
-        for (int i = 0; i < 1000; i++) {
-            lineData.append(i, Math.sin(i * 0.1));
-//            scatterData.append(i, Math.cos(i * 0.1));
-        }
-
-        return lineData;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        audioProcess.start();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        audioProcess.stop();
-    }
-
 }
