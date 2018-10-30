@@ -22,7 +22,7 @@ import com.scichart.extensions.builders.SciChartBuilder;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
-    private AudioProcess audioProcess;
+    private AudioProcess audioProcess = new AudioProcess();;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
 //        surface.getRenderableSeries().add(scatterSeries);
         surface.getRenderableSeries().add(lineSeries);
         surface.zoomExtents();
+
+        audioProcess.start();
     }
 
     public XyDataSeries UpdateData(SciChartBuilder sciChartBuilder) {
