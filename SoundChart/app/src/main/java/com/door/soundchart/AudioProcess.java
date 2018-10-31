@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.support.v4.content.res.TypedArrayUtils;
 import android.util.Log;
 
 import com.scichart.charting.model.dataSeries.XyDataSeries;
@@ -120,16 +121,15 @@ public class AudioProcess {
 
                     if (isDataReady) {
                         synchronized (power) {
-                            for (int j = 0; j < half_len; j++) {
-                                power[j] = Math.log(power[j]);
-                            }
+//                            for (int j = 0; j < half_len; j++) {
+//                                power[j] = Math.log(power[j]);
+//                            }
                             Log.d("POWER:", Arrays.toString(power));
                             outBuf.add(power);
                             x = 0;
-                            for (double powerInt :
-                                    power) {
+                            for (int i = 511; i >= 0; i--) {
                                 synchronized (lineData){
-                                    lineData.append(x,  powerInt);
+                                    lineData.append(x,  power[i]);
                                     ++x;
                                 }
                             }

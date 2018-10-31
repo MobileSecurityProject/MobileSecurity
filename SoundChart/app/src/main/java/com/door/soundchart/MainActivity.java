@@ -12,6 +12,7 @@ import com.scichart.charting.visuals.SciChartSurface;
 import com.scichart.charting.visuals.annotations.HorizontalAnchorPoint;
 import com.scichart.charting.visuals.annotations.TextAnnotation;
 import com.scichart.charting.visuals.annotations.VerticalAnchorPoint;
+import com.scichart.charting.visuals.axes.AutoRange;
 import com.scichart.charting.visuals.axes.IAxis;
 import com.scichart.charting.visuals.pointmarkers.EllipsePointMarker;
 import com.scichart.charting.visuals.renderableSeries.IRenderableSeries;
@@ -56,11 +57,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a numeric Y axis
         final IAxis yAxis = sciChartBuilder.newNumericAxis()
-                .withAxisTitle("Y Axis Title").withVisibleRange(0, 100).build();
+                .withAxisTitle("Y Axis Title")
+                .withVisibleRange(0, 3000000000.0)
+                .withAutoRangeMode(AutoRange.Never).build();
 
         // Create a TextAnnotation and specify the inscription and position for it
         TextAnnotation textAnnotation = sciChartBuilder.newTextAnnotation()
-                .withX1(5.0)
+                .withX1(0)
                 .withY1(55.0)
                 .withText("Hello World!")
                 .withHorizontalAnchorPoint(HorizontalAnchorPoint.Center)
@@ -112,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 //                        lineData.append(x, Math.sin(x * 0.1));
 
                         // Zoom series to fit the viewport
-                        surface.zoomExtents();
+//                        surface.up();
 //                        ++x;
                     }
                 });
