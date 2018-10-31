@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 public class AudioProcess {
     private ArrayList<short[]> inBuf = new ArrayList<short[]>(); // raw audio data
-    private ArrayList<int[]> outBuf = new ArrayList<int[]>(); // processed data
+    private ArrayList<double[]> outBuf = new ArrayList<double[]>(); // processed data
     private boolean isRecording = false;
     private int length = 1024;
     private int half_len = 512;
@@ -52,6 +52,20 @@ public class AudioProcess {
         inBuf.clear();
     }
 
+    // a lot of hard coded stuffs...
+    public void identifyHighFreq(double[] data) {
+        int cnt = 0;
+        for (int i = 400; i < half_len; i++) {
+            if (data[i] >= 20) {
+                cnt++;
+            }
+        }
+        if (cnt > 40) {
+            Log.d("DETECT", "High Freq Detected");
+            // TODO: send msg after detect
+        }
+    }
+
     //录音线程
     class RecordThread extends Thread {
         private AudioRecord audioRecord;
@@ -74,7 +88,7 @@ public class AudioProcess {
                 audioRecord.startRecording();
                 while (isRecording) {
                     // fft batch
-                    int[] power = new int[half_len];
+                    double[] power = new double[half_len];
                     boolean isDataReady = false;
                     for (int i = 0; i < batchNum; i++) {
                         resultOfRead = audioRecord.read(buffer, 0, length); // read blocking
@@ -106,15 +120,19 @@ public class AudioProcess {
 
                     if (isDataReady) {
                         synchronized (outBuf) {
+                            for (int j = 0; j < half_len; j++) {
+                                power[j] = Math.log(power[j]);
+                            }
                             Log.d("POWER:", Arrays.toString(power));
                             outBuf.add(power);
-                            for (int powerInt :
+                            for (double powerInt :
                                     power) {
                                 synchronized (lineData){
-                                    lineData.append(x,  Math.log(powerInt));
+                                    lineData.append(x,  powerInt);
                                     ++x;
                                 }
                             }
+                            identifyHighFreq(power);
                         }
                     }
 
@@ -129,16 +147,15 @@ public class AudioProcess {
     }
 
     // Drawing process
-    class DrawThread extends Thread {
+    class DetectThread extends Thread {
 
-        public DrawThread() {
+        public DetectThread() {
 
         }
         private int x = 0;
-        @SuppressWarnings("unchecked")
-        public void run() {
-
-
+//        @SuppressWarnings("unchecked")
+//        public void run() {
+//
 //                lineData.append(x, Math.sin(x * 0.1));
 //                ArrayList<int[]>buf = new ArrayList<int[]>();
 //                synchronized (outBuf) {
@@ -155,7 +172,7 @@ public class AudioProcess {
 //                    // TODO: SimpleDraw tmpBuf
 //                }
 //                ++x;
-
+//
 //            UpdateSuspender.using(surface, new Runnable() {
 //                @Override
 //                public void run() {
@@ -170,7 +187,7 @@ public class AudioProcess {
 //                }
 //            });
 
-        }
+//        }
     }
 
 }
