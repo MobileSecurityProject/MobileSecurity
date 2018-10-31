@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         // Create a numeric X axis
         final IAxis xAxis = sciChartBuilder.newNumericAxis()
                 .withAxisTitle("X Axis Title")
-                .withVisibleRange(-5, 15)
+                .withVisibleRange(0, 512)
                 .build();
 
         // Create a numeric Y axis
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         // Added in Tutorial #6 - FIFO (scrolling) series
         // Create a couple of DataSeries for numeric (Int, Double) data
         // Set FIFO capacity to 500 on DataSeries
-        final int fifoCapacity = 500;
+        final int fifoCapacity = 513;
 
         final XyDataSeries lineData = sciChartBuilder.newXyDataSeries(Integer.class, Double.class)
                 .withFifoCapacity(fifoCapacity)

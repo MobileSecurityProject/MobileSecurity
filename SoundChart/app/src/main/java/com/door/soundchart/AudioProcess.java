@@ -105,15 +105,19 @@ public class AudioProcess {
                     }
 
                     if (isDataReady) {
-                        synchronized (outBuf) {
+                        synchronized (power) {
                             Log.d("POWER:", Arrays.toString(power));
                             outBuf.add(power);
+                            x = 0;
                             for (int powerInt :
                                     power) {
                                 synchronized (lineData){
                                     lineData.append(x, (double)powerInt);
                                     ++x;
                                 }
+                            }
+                            synchronized (lineData){
+                                lineData.append(512, Double.NaN);
                             }
                         }
                     }
