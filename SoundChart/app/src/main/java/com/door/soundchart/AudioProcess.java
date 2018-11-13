@@ -1,11 +1,14 @@
 package com.door.soundchart;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Bundle;
 import android.support.v4.content.res.TypedArrayUtils;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -29,6 +32,7 @@ public class AudioProcess {
     private int sampleRate = 44100;
     private XyDataSeries lineData;
     private SciChartSurface surface;
+
 
     private int x = 0;
     public AudioProcess(SciChartSurface surface, XyDataSeries lineData)
@@ -56,14 +60,14 @@ public class AudioProcess {
     // a lot of hard coded stuffs...
     public void identifyHighFreq(double[] data) {
         int cnt = 0;
-        for (int i = 400; i < half_len; i++) {
-            if (data[i] >= 20) {
+        for (int i = 0; i < 112; i++) {
+            if (data[i] >= 2000000000) {
                 cnt++;
             }
         }
-        if (cnt > 40) {
-            Log.d("DETECT", "High Freq Detected");
-            // TODO: send msg after detect
+
+        if (cnt > 50) {
+            Log.e("DETECT", "High Freq Detected=======================");
         }
     }
 
