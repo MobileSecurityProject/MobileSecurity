@@ -3,6 +3,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.scichart.charting.ClipMode;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
@@ -28,6 +29,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     AudioProcess ap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,13 +53,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a numeric X axis
         final IAxis xAxis = sciChartBuilder.newNumericAxis()
-                .withAxisTitle("X Axis Title")
+                .withAxisTitle("Frequency")
                 .withVisibleRange(0, 512)
                 .build();
 
         // Create a numeric Y axis
         final IAxis yAxis = sciChartBuilder.newNumericAxis()
-                .withAxisTitle("Y Axis Title")
+                .withAxisTitle("Intensity")
                 .withVisibleRange(0, 3000000000.0)
                 .withAutoRangeMode(AutoRange.Never).build();
 
@@ -65,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         TextAnnotation textAnnotation = sciChartBuilder.newTextAnnotation()
                 .withX1(0)
                 .withY1(55.0)
-                .withText("Hello World!")
                 .withHorizontalAnchorPoint(HorizontalAnchorPoint.Center)
                 .withVerticalAnchorPoint(VerticalAnchorPoint.Center)
                 .withFontStyle(20, ColorUtil.White)
