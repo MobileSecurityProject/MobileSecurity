@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * @author: Zi
  * @ref: https://www.linuxidc.com/Linux/2012-01/51770p2.htm
  */
 
@@ -44,14 +43,11 @@ public class AudioProcess {
     private int shift = 30;
     public int frequence = 0;
 
-    //启动程序
     public void start() {
         isRecording = true;
         new RecordThread().start();
-//        new DrawThread().start();
     }
 
-    //停止程序
     public void stop() {
         isRecording = false;
         inBuf.clear();
@@ -71,7 +67,6 @@ public class AudioProcess {
         }
     }
 
-    //录音线程
     class RecordThread extends Thread {
         private AudioRecord audioRecord;
         private FFT convert;
