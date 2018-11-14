@@ -123,10 +123,17 @@ public class MainActivity extends AppCompatActivity {
                 switch (msg.what) {
                     case DETECT_ULTRASOUND: {
                         Log.e("detect", "DETECT SUCCESSFULLY");
+                        // trigger noise jamming service
+                        Intent jam_service_intent = new Intent(MainActivity.this, NoiseJammingService.class);
+                        // TODO: change is_blocked later
+                        jam_service_intent.putExtra("is_blocked", false);
+                        MainActivity.this.startService(jam_service_intent);
                         toast.show();
                         break;
                     }
                     case NONE_DETECT: {
+                        Intent jam_service_intent = new Intent(MainActivity.this, NoiseJammingService.class);
+                        MainActivity.this.stopService(jam_service_intent);
                         toast.cancel();
                         break;
                     }
