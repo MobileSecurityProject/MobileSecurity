@@ -1,18 +1,16 @@
 package com.door.soundchart;
 
-import android.app.Activity;
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.Bundle;
-import android.support.v4.content.res.TypedArrayUtils;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.visuals.SciChartSurface;
-import com.scichart.core.framework.UpdateSuspender;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,13 +30,16 @@ public class AudioProcess {
     private int sampleRate = 44100;
     private XyDataSeries lineData;
     private SciChartSurface surface;
-
+    private Handler mHandler;
+    public static final int DETECT_ULTRASOUND = 100;
+    public static final int NONE_DETECT = 200;
 
     private int x = 0;
-    public AudioProcess(SciChartSurface surface, XyDataSeries lineData)
+    public AudioProcess(SciChartSurface surface, XyDataSeries lineData, Handler mHandler)
     {
         this.surface = surface;
         this.lineData = lineData;
+        this.mHandler = mHandler;
     }
 
     private int shift = 30;
@@ -57,6 +58,7 @@ public class AudioProcess {
         inBuf.clear();
     }
 
+
     // a lot of hard coded stuffs...
     public void identifyHighFreq(double[] data) {
         int cnt = 0;
@@ -67,9 +69,19 @@ public class AudioProcess {
         }
 
         if (cnt > 50) {
-            Log.e("DETECT", "High Freq Detected=======================");
+            Message msg = new Message();
+            msg.what = DETECT_ULTRASOUND;
+            msg.obj = "DETECT SUCCESSFULLY";
+            mHandler.sendMessage(msg);
+        } else {
+            Message msg = new Message();
+            msg.what = NONE_DETECT;
+            msg.obj = "NOTHING DETECTED";
+            mHandler.sendMessage(msg);
         }
     }
+
+
 
     //录音线程
     class RecordThread extends Thread {

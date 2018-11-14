@@ -1,9 +1,16 @@
 package com.door.soundchart;
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.scichart.charting.ClipMode;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
@@ -27,13 +34,21 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
+
 public class MainActivity extends AppCompatActivity {
     AudioProcess ap;
+    public Handler mHandler;
+    public static final int DETECT_ULTRASOUND = 100;
+    public static final int NONE_DETECT = 200;
 
+
+    @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         // Added in Tutorial #1
         // Create a SciChartSurface
@@ -102,9 +117,30 @@ public class MainActivity extends AppCompatActivity {
         final XyDataSeries lineData = sciChartBuilder.newXyDataSeries(Integer.class, Double.class)
                 .withFifoCapacity(fifoCapacity)
                 .build();
+        final Toast toast = Toast.makeText(MainActivity.this, "DETECT SUCCESSFULLY", Toast.LENGTH_SHORT);
+        mHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case DETECT_ULTRASOUND: {
+                        Log.e("detect", "DETECT SUCCESSFULLY");
+                        toast.show();
+                        break;
+                    }
+                    case NONE_DETECT: {
+                        toast.cancel();
+                        break;
+                    }
+                    default:
+                        break;
+                }
 
-        ap = new AudioProcess(surface, lineData);
+            }
+        };
+
+        ap = new AudioProcess(surface, lineData, mHandler);
         ap.start();
+
+
         TimerTask updateDataTask = new TimerTask() {
             private int x = 0;
 
@@ -150,4 +186,6 @@ public class MainActivity extends AppCompatActivity {
         // Add the CursorModifier to the SciChartSurface
         surface.getChartModifiers().add(cursorModifier);
     }
+
+
 }
