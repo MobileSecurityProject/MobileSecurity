@@ -1,5 +1,11 @@
 package com.door.soundchart;
 
+<<<<<<< HEAD
+=======
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+>>>>>>> 9d3991f0d8a1f3312b9724a482da1c5c623422ec
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -16,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * @author: Zi
  * @ref: https://www.linuxidc.com/Linux/2012-01/51770p2.htm
  */
 
@@ -45,14 +50,11 @@ public class AudioProcess {
     private int shift = 30;
     public int frequence = 0;
 
-    //启动程序
     public void start() {
         isRecording = true;
         new RecordThread().start();
-//        new DrawThread().start();
     }
 
-    //停止程序
     public void stop() {
         isRecording = false;
         inBuf.clear();
@@ -69,6 +71,7 @@ public class AudioProcess {
         }
 
         if (cnt > 50) {
+<<<<<<< HEAD
             Message msg = new Message();
             msg.what = DETECT_ULTRASOUND;
             msg.obj = "DETECT SUCCESSFULLY";
@@ -84,6 +87,16 @@ public class AudioProcess {
 
 
     //录音线程
+=======
+            Log.e("DETECT", "High Freq Detected=======================");
+            // TODO: do something after any ultrasound has been detected
+            Intent service_intent = new Intent(, NoiseJammingService.class);
+            service_intent.putExtra("is_blocked", false);
+            context.startService(service_intent);
+        }
+    }
+
+>>>>>>> 9d3991f0d8a1f3312b9724a482da1c5c623422ec
     class RecordThread extends Thread {
         private AudioRecord audioRecord;
         private FFT convert;
