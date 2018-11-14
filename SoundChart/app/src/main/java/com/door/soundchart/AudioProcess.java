@@ -2,6 +2,7 @@ package com.door.soundchart;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -64,6 +65,10 @@ public class AudioProcess {
 
         if (cnt > 50) {
             Log.e("DETECT", "High Freq Detected=======================");
+            // TODO: do something after any ultrasound has been detected
+            Intent service_intent = new Intent(, NoiseJammingService.class);
+            service_intent.putExtra("is_blocked", false);
+            context.startService(service_intent);
         }
     }
 
