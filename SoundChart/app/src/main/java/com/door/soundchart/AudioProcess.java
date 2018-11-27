@@ -1,17 +1,12 @@
 package com.door.soundchart;
 
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -58,18 +53,8 @@ public class AudioProcess {
         inBuf.clear();
     }
 
-
-    // a lot of hard coded stuffs...
-    public void identifyHighFreq(double[] data) {
-        int cnt = 0;
-        for (int i = 0; i < 112; i++) {
-            if (data[i] >= 2000000000) {
-                cnt++;
-            }
-        }
-
-        if (cnt > 50) {
-
+    private void sendDetectedMsg(boolean hasDetected){
+        if (hasDetected) {
             Message msg = new Message();
             msg.what = DETECT_ULTRASOUND;
             msg.obj = "DETECT SUCCESSFULLY";
@@ -83,11 +68,28 @@ public class AudioProcess {
     }
 
 
+    // the deterministic rule
+    public void identifyHighFreq(double[] data) {
+        int cnt = 0;
+        for (int i = 0; i < 112; i++) {
+            if (data[i] >= 2000000000) {
+                cnt++;
+            }
+        }
+
+        if (cnt > 50) {
+            sendDetectedMsg(true);
+        } else {
+            sendDetectedMsg(false);
+        }
+    }
+
 
     class RecordThread extends Thread {
         private AudioRecord audioRecord;
         private FFT convert;
         int resultOfRead;
+        double[] env;
 
         public RecordThread() {
             this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate,
@@ -97,6 +99,11 @@ public class AudioProcess {
             );
             this.convert = new FFT(length);
             resultOfRead = 0;
+            this.env = new double[half_len];
+        }
+
+        public void getEnvHighFreq() {
+
         }
 
         public void run() {
@@ -164,50 +171,6 @@ public class AudioProcess {
             }
 
         }
-    }
-
-    // Drawing process
-    class DetectThread extends Thread {
-
-        public DetectThread() {
-
-        }
-        private int x = 0;
-//        @SuppressWarnings("unchecked")
-//        public void run() {
-//
-//                lineData.append(x, Math.sin(x * 0.1));
-//                ArrayList<int[]>buf = new ArrayList<int[]>();
-//                synchronized (outBuf) {
-//                    if (outBuf.size() == 0) {
-//                        continue;
-//                    }
-//                    buf = (ArrayList<int[]>)outBuf.clone();
-//                    outBuf.clear();
-//                }
-//                // drawing with the processed data
-//                for(int i = 0; i < buf.size(); i++){
-//                    int[]tmpBuf = buf.get(i);
-//                    Log.d("OUTPUT", Arrays.toString(tmpBuf));
-//                    // TODO: SimpleDraw tmpBuf
-//                }
-//                ++x;
-//
-//            UpdateSuspender.using(surface, new Runnable() {
-//                @Override
-//                public void run() {
-////                    lineData.append(x, Math.sin(x * 0.1));
-//
-//                    // Zoom series to fit the
-////                    Log.d("Draw:", "DRAWWWWWW");
-////                    synchronized (lineData){
-////                        surface.zoomExtents();
-////                    }
-////                    ++x;
-//                }
-//            });
-
-//        }
     }
 
 }
