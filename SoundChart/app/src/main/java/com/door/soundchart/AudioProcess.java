@@ -4,6 +4,7 @@ package com.door.soundchart;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -31,6 +32,7 @@ public class AudioProcess {
     private Handler mHandler;
     public static final int DETECT_ULTRASOUND = 100;
     public static final int NONE_DETECT = 200;
+    double[] env;
 
     private int x = 0;
     public AudioProcess(SciChartSurface surface, XyDataSeries lineData, Handler mHandler)
@@ -39,9 +41,6 @@ public class AudioProcess {
         this.lineData = lineData;
         this.mHandler = mHandler;
     }
-
-    private int shift = 30;
-    public int frequence = 0;
 
     public void start() {
         isRecording = true;
@@ -68,20 +67,39 @@ public class AudioProcess {
     }
 
 
+//    // the intuitive rule
+//    public void identifyHighFreq(double[] data) {
+//        int cnt = 0;
+//        for (int i = 0; i < 112; i++) {
+//            if (data[i] >= 2000000000) {
+//                cnt++;
+//            }
+//        }
+//
+//        if (cnt > 50) {
+//            sendDetectedMsg(true);
+//        } else {
+//            sendDetectedMsg(false);
+//        }
+//    }
+
     // the deterministic rule
     public void identifyHighFreq(double[] data) {
-        int cnt = 0;
+        double z = 0;
+        int cntHigher = 0;
         for (int i = 0; i < 112; i++) {
-            if (data[i] >= 2000000000) {
-                cnt++;
+            if (data[i] >= env[i]) {
+                cntHigher++;
+                z += Math.pow(env[i] - data[i], 2);
             }
         }
 
-        if (cnt > 50) {
+        if (z > 5.0E17) {
             sendDetectedMsg(true);
         } else {
             sendDetectedMsg(false);
         }
+        Log.e("zVal", String.valueOf(z));
     }
 
 
@@ -89,7 +107,7 @@ public class AudioProcess {
         private AudioRecord audioRecord;
         private FFT convert;
         int resultOfRead;
-        double[] env;
+        int highFreqWin;
 
         public RecordThread() {
             this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate,
@@ -99,11 +117,87 @@ public class AudioProcess {
             );
             this.convert = new FFT(length);
             resultOfRead = 0;
-            this.env = new double[half_len];
+            highFreqWin = 112;
+            env = new double[highFreqWin];
+
+            getEnvHighFreq();
         }
 
         public void getEnvHighFreq() {
+            Log.d("GetEnvHighFreq", "=========== start ==============");
+            int envSampleSize = 50;
+            int cnt = 0;
+            audioRecord.startRecording();
+            try {
+                short[] buffer = new short[length];
+                audioRecord.startRecording();
+                while (isRecording) {
+                    if (cnt >= envSampleSize) {
+                        break;
+                    }
+                    // fft batch
+                    double[] power = new double[half_len];
+                    boolean isDataReady = false;
+                    for (int i = 0; i < batchNum; i++) {
+                        resultOfRead = audioRecord.read(buffer, 0, length); // read blocking
+                        Log.d("ReadLen:", String.valueOf(resultOfRead));
+                        if (resultOfRead > 0) {
+                            isDataReady = true;
+                        }
 
+                        synchronized (inBuf) {
+                            inBuf.add(buffer);
+                        }
+                        short[] tmpBuf = new short[length];
+                        System.arraycopy(buffer, 0, tmpBuf, 0, length);
+
+                        double[] x = new double[length];
+                        double[] y = new double[length];
+                        for (int j = 0; j < length; j++) {
+                            x[j] = (double) tmpBuf[j];
+                        }
+                        convert.fft(x, y);
+                        for (int j = 0; j < half_len; j++) {
+                            power[j] += x[j + half_len] * x[j + half_len] + y[j + half_len] * y[j + half_len];
+                        }
+
+                        if (isDataReady) {
+                            break;
+                        }
+                    }
+
+                    if (isDataReady) {
+                        //synchronized (power) {
+//                            for (int j = 0; j < half_len; j++) {
+//                                power[j] = Math.log(power[j]);
+//                            }
+
+
+                            Log.d("POWER:", Arrays.toString(power));
+                            //outBuf.add(power);
+                            cnt++;
+                            for (int i = 0; i < highFreqWin; i++) {
+                                env[i] += power[i] / envSampleSize;
+                            }
+                            identifyHighFreq(power);
+                        //}
+                    }
+
+                }
+                audioRecord.stop();
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < highFreqWin; i++) {
+                    sb.append(String.valueOf(env[i]));
+                    sb.append(" ");
+                }
+                Log.d("GetEnvHighFreq", sb.toString());
+            } catch (Exception e) {
+                Log.i("Exception", e.toString());
+            }
+
+            audioRecord.stop();
+            Log.d("GetEnvHighFreq", "=========== end ==============");
         }
 
         public void run() {
